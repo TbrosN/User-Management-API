@@ -3,7 +3,7 @@ This is a simple REST API for user management.
 
 ### Features
 - Password encryption
-- Bearer token authentication (i.e., the `/user` endpoint requires admin token)
+- Bearer token authentication (i.e., the `/user` endpoint requires an admin)
 - SQLite database to store users
 - User login and registration
 
