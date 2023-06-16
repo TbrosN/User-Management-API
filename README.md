@@ -1,5 +1,5 @@
 # User Management API
-This is a simple REST API for user management.
+This is a simple REST API for user management, built with Node.js and Express.
 
 ### Features
 - Password encryption
