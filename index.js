@@ -18,17 +18,9 @@ const port = process.env.PORT || 3000
 app.use("/", AuthorizationRoutes);
 app.use("/user", UserRoutes);
 
-// Debugging testing
+// Endpoint for debugging testing
 app.get('/test', (req, res) => {
-  knex('users')
-    .select('*')
-    .then((users) => {
-      return res.json(users);
-    })
-    .catch((err) => {
-      console.error(err);
-      return res.json({success: false, message: 'An error occurred, please try again later.'});
-    })
+  res.status(200).json({test: true});
 });
 
 app.listen(port, () => {

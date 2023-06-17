@@ -41,33 +41,45 @@ module.exports = {
     }
 
     knex('users')
-      .insert({username: payload.username, password: encryptedPassword, role}, 'id')
-      .then((params) => {
-        const id = params[0].id
-        // Generating an AccessToken for the user, which will be
-        // required in every subsequent request.
-        const accessToken = generateAccessToken(payload.username, id);
-        //get user by id
-        knex('users')
-          .select('id','username')
-          .where('id', id)
-        .then((user) => {
-          return res.status(200).json({
-            status: true,
-            result: {
-              user: user[0],
-              token: accessToken
+      .where('username', payload.username)
+      .then((users) => {
+        if (users.length > 0) {
+          return res.status(400).json({
+            status: false,
+            error: {
+              message: `Username \`${payload.username}\` is already taken.`,
             },
+          })
+        }
+        knex('users')
+          .insert({username: payload.username, password: encryptedPassword, role}, 'id')
+          .then((params) => {
+            const id = params[0].id
+            // Generating an AccessToken for the user, which will be
+            // required in every subsequent request.
+            const accessToken = generateAccessToken(payload.username, id);
+            //get user by id
+            knex('users')
+              .select('id','username')
+              .where('id', id)
+            .then((user) => {
+              return res.status(200).json({
+                status: true,
+                result: {
+                  user: user[0],
+                  token: accessToken
+                },
+              });
+            })
+          })
+          .catch((err) => {
+            return res.status(500).json({
+              status: false,
+              error: err,
+              message: err.message
+            });
           });
-        })
       })
-      .catch((err) => {
-        return res.status(500).json({
-          status: false,
-          error: err,
-          message: err.message
-        });
-      });
   },
   login: (req, res) => {
       const knex = require("../../index");
