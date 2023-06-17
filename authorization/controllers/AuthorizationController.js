@@ -1,8 +1,6 @@
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
-const UserModel = require("../../common/models/User");
-
 const { roles, jwtSecret, jwtExpirationInSeconds } = require("../../config");
 
 // Generates an Access Token using username and userId for the user's authentication
@@ -32,6 +30,7 @@ const encryptPassword = (password) => {
 
 module.exports = {
   register: (req, res) => {
+    const knex = require("../../index");
     const payload = req.body;
     
     let encryptedPassword = encryptPassword(payload.password);
@@ -41,34 +40,43 @@ module.exports = {
       role = roles.USER;
     }
 
-    UserModel.createUser(
-      Object.assign(payload, { password: encryptedPassword, role })
-    )
-      .then((user) => {
+    knex('users')
+      .insert({username: payload.username, password: encryptedPassword, role}, 'id')
+      .then((params) => {
+        const id = params[0].id
         // Generating an AccessToken for the user, which will be
         // required in every subsequent request.
-       const accessToken = generateAccessToken(payload.username, user.id);
-
-       return res.status(200).json({
-         status: true,
-         result: {
-           user: user.toJSON(),
-           token: accessToken,
-          },
-        });
+        const accessToken = generateAccessToken(payload.username, id);
+        //get user by id
+        knex('users')
+          .select('id','username')
+          .where('id', id)
+        .then((user) => {
+          return res.status(200).json({
+            status: true,
+            result: {
+              user: user[0],
+              token: accessToken
+            },
+          });
+        })
       })
       .catch((err) => {
         return res.status(500).json({
           status: false,
           error: err,
+          message: err.message
         });
       });
   },
   login: (req, res) => {
+      const knex = require("../../index");
       const { username, password } = req.body;
 
-      UserModel.findUser({ username })
-        .then((user) => {
+      knex('users')
+        .where('username', username)
+        .then((users) => {
+          const user = users[0]
           // IF user is not found with the given username
           // THEN Return user not found error
           if (!user) {
@@ -100,15 +108,16 @@ module.exports = {
         return res.status(200).json({
           status: true,
           data: {
-            user: user.toJSON(),
+            user: user,
             token: accessToken,
           },
         });
       })
       .catch((err) => {
+        console.error(err);
         return res.status(500).json({
           status: false,
-          error: err,
+          error_msg: err.message,
         });
       });
   }
