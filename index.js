@@ -13,6 +13,7 @@ const knex = require('knex')(knexConfig[process.env.NODE_ENV])
 module.exports = knex
 
 const port = process.env.PORT || 3000
+const ip = process.env.MY_IP || 'localhost'
 
 // Attaching the Authentication and User Routes to the app.
 app.use("/", AuthorizationRoutes);
@@ -23,6 +24,6 @@ app.get('/test', (req, res) => {
   res.status(200).json({test: true});
 });
 
-app.listen(port, () => {
+app.listen(port, ip, () => {
   console.log("Server Listening on PORT:", port);
 });

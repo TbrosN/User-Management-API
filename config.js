@@ -5,10 +5,5 @@ module.exports = {
   roles: {
     USER: 'user',
     ADMIN: 'admin'
-  },
-  productPriceUnits: {
-    DOLLAR: 'dollar',
-    EURO: 'euro',
-    INR: 'inr'
   }
 }
